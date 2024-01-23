@@ -14,6 +14,14 @@ class TodoItemView(APIView):
         serializer = TodoItemSerializer(todos, many=True)
         return Response(serializer.data)
 
+    def put(self, request, pk, format=None):
+        todo = TodoItem.objects.get(pk=pk, author=request.user)
+        todo.checked = request.data.get('checked', todo.checked)
+        todo.save()
+
+        serializer = TodoItemSerializer(todo)
+        return Response(serializer.data)
+
 # Create your views here.
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
