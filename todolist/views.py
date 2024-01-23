@@ -4,6 +4,7 @@ from todolist.models import TodoItem
 from todolist.serializers import TodoItemSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 class TodoItemView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -21,6 +22,11 @@ class TodoItemView(APIView):
 
         serializer = TodoItemSerializer(todo)
         return Response(serializer.data)
+      
+    def delete(self, request, pk, format=None):
+        todo = TodoItem.objects.get(pk=pk, author=request.user)
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # Create your views here.
 class LoginView(ObtainAuthToken):
