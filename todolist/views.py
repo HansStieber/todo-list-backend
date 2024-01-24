@@ -27,17 +27,31 @@ class TodoItemView(APIView):
         todo = TodoItem.objects.get(pk=pk, author=request.user)
         todo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+      
+    def post(self, request, format=None):
+        title = request.data.get('title', None)
+        checked = request.data.get('checked', False)
+
+        if title is None:
+            return Response({'error': 'Title is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        todo_item = TodoItem.objects.create(author=request.user, title=title, checked=checked)
+
+        serializer = TodoItemSerializer(todo_item)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # Create your views here.
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-          serializer = self.serializer_class(data=request.data,
-                                            context={'request': request})
-          serializer.is_valid(raise_exception=True)
-          user = serializer.validated_data['user']
-          token, created = Token.objects.get_or_create(user=user)
-          return Response({
-              'token': token.key,
-              'user_id': user.pk,
-              'email': user.email
-          })
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+            )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email
+        })
